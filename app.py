@@ -83,7 +83,7 @@ elif menu == "➕ Dodaj przepis":
                         if skladnik.strip():
                             ws_zakupy.append_row([skladnik.strip(), "Nie"])
                             
-                st.success(f"Przepis '{nazwa'}' został pomyślnie zapisany!")
+                st.success(f"Przepis '{nazwa}' został pomyślnie zapisany!")
             else:
                 st.warning("Uzupełnij nazwę przepisu oraz składniki.")
 
