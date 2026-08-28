@@ -3,6 +3,13 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 
+# --- KONFIGURACJA STRONY (Tytuł w karcie przeglądarki i ikona) ---
+st.set_page_config(
+    page_title="Książka Kucharska",
+    page_icon="📖",
+    layout="wide"
+)
+
 # --- KONFIGURACJA POŁĄCZENIA Z GOOGLE SHEETS ---
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
