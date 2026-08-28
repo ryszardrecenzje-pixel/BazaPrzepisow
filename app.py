@@ -97,6 +97,14 @@ df_przepisy = pd.DataFrame(data_przepisy)
 menu = ["Przeglądaj przepisy", "Dodaj przepis", "Lista zakupów", "Co mogę zrobić z..."]
 wybor = st.sidebar.selectbox("Spis treści", menu)
 
+# --- FUNKCJA POMOCNICZA DO PARSOWANIA SKŁADNIKÓW ---
+def parse_skladnik(linijka):
+    """Rozbija linijkę składnika używając ukośnika / lub \ """
+    # Zamieniamy \ na / dla jednolitego parsowania
+    normalizowana = linijka.replace("\\", "/")
+    parts = [p.strip() for p in normalizowana.split("/")]
+    return parts
+
 # --- 1. PRZEGLĄDAJ, USUŃ I EDYTUJ PRZEPISY ---
 if wybor == "Przeglądaj przepisy":
     st.header("Karta Przepisów")
@@ -127,7 +135,7 @@ if wybor == "Przeglądaj przepisy":
                     st.markdown("**Składniki:**")
                     linijki_skladnikow = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
                     for s in linijki_skladnikow:
-                        parts = [p.strip() for p in s.split("|")]
+                        parts = parse_skladnik(s)
                         if len(parts) == 3:
                             ilosc, jednostka, produkt = parts
                             st.markdown(f"- **{ilosc} {jednostka}** – {produkt}")
@@ -189,7 +197,7 @@ elif wybor == "Dodaj przepis":
         przygotowanie_input = st.text_area("Przygotowanie", help="Opisz krok po kroku jak wykonać przepis.")
         
         st.markdown("### Składniki")
-        st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `500 | g | mąka pszenna`)")
+        st.info("Wpisz składniki w formacie: **Ilość / Jednostka / Nazwa produktu** (np. `500 / g / mąka pszenna`)")
         skladniki_input = st.text_area("Lista składników (każdy w nowej linii)")
         
         submit = st.form_submit_button("Zapisz w księdze")
@@ -235,7 +243,7 @@ elif wybor == "Lista zakupów":
                     linijki = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
                     
                     for linijka in linijki:
-                        parts = [p.strip() for p in linijka.split("|")]
+                        parts = parse_skladnik(linijka)
                         if len(parts) == 3:
                             ilosc_str, jednostka, produkt = parts
                             produkt_lower = produkt.lower()
@@ -270,7 +278,7 @@ elif wybor == "Lista zakupów":
                     zsumowane_skladniki.append(f"- [ ] {produkt}")
                 else:
                     ilosc_formatted = int(ilosc) if ilosc.is_integer() else round(ilosc, 2)
-                    zsumowane_skladniki.append(f"- [ ] {ilosc_formatted} {jednostka} | {produkt}")
+                    zsumowane_skladniki.append(f"- [ ] {ilosc_formatted} {jednostka} / {produkt}")
             
             tekst_listy = "\n".join(zsumowane_skladniki)
             st.markdown(tekst_listy)
@@ -297,7 +305,7 @@ elif wybor == "Co mogę zrobić z...":
             skladniki_tekst = row.get("Składniki", "")
             linijki = [s.strip().lower() for s in skladniki_tekst.split("\n") if s.strip()]
             for l in linijki:
-                parts = [p.strip().lower() for p in l.split("|")]
+                parts = parse_skladnik(l)
                 produkt = parts[-1] if len(parts) > 0 else l.lower()
                 wszystkie_skladniki.add(produkt)
                 
@@ -323,7 +331,7 @@ elif wybor == "Co mogę zrobić z...":
                 skladniki_przepisu = []
                 for s in skladniki_tekst.split("\n"):
                     if s.strip():
-                        parts = [p.strip().lower() for p in s.split("|")]
+                        parts = parse_skladnik(s)
                         produkt = parts[-1] if len(parts) > 0 else s.strip().lower()
                         skladniki_przepisu.append(produkt)
                 
