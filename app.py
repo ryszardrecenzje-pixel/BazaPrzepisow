@@ -5,26 +5,81 @@ from google.oauth2.service_account import Credentials
 
 # --- KONFIGURACJA STRONY ---
 st.set_page_config(
-    page_title="Książka Kucharska",
-    page_icon="📖",
+    page_title="Stara Księga Kucharska",
+    page_icon="📜",
     layout="wide"
 )
 
-# --- LEKKI STYL (BAZUJĄCY NA MOTYWIE CONFIG.TOML) ---
+# --- STYLIZACJA: STARY PERGAMIN I PISMO RĘCZNE ---
 st.markdown("""
     <style>
-    /* Nagłówki - wyraziste antyczne złoto */
+    /* Import czcionki pisanej ręcznie z Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap');
+
+    /* Tło całej aplikacji - stary, pożółkły papier */
+    .stApp {
+        background-color: #F4E8D8;
+        background-image: radial-gradient(#E2CBB5 15%, transparent 16%), radial-gradient(#D6BC9F 15%, transparent 16%);
+        background-size: 24px 24px;
+        background-position: 0 0, 12px 12px;
+    }
+
+    /* Panel boczny (Sidebar) jako skórzana okładka lub ciemniejsza karta */
+    [data-testid="stSidebar"] {
+        background-color: #E6D3B4;
+        border-right: 3px solid #8B4513;
+    }
+
+    /* Wymuszenie czcionki pisanej ręcznie w nagłówkach i ważnych miejscach */
     h1, h2, h3 {
-        font-family: 'Georgia', serif;
-        color: #8B4513 !important;
-        border-bottom: 2px solid #D4AF37;
+        font-family: 'Caveat', cursive !important;
+        color: #4A2E18 !important;
+        letter-spacing: 1px;
+        border-bottom: 2px dashed #8B4513;
         padding-bottom: 5px;
     }
-    
-    /* Expandery (przepisy) */
+
+    h1 {
+        font-size: 3rem !important;
+    }
+
+    /* Stylizacja expanderów jako stare karty przepisów */
     .streamlit-expanderHeader {
-        font-family: 'Georgia', serif;
+        background-color: #EFE3D0 !important;
+        border: 1px solid #8B4513 !important;
+        border-radius: 4px;
+        font-family: 'IM Fell English', serif !important;
+        color: #3D2314 !important;
         font-weight: bold;
+    }
+
+    /* Teksty w polach i opisach */
+    p, span, label, div, .stMarkdown {
+        font-family: 'IM Fell English', serif;
+        color: #3D2314 !important;
+    }
+
+    /* Pola formularzy - wygląd starego papieru do pisania */
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+        background-color: #FFFDF9 !important;
+        border: 1px solid #8B4513 !important;
+        color: #3D2314 !important;
+        font-family: 'IM Fell English', serif;
+    }
+
+    /* Przyciski w stylu retro */
+    .stButton button {
+        background-color: #8B4513 !important;
+        color: #F4E8D8 !important;
+        border: 1px solid #4A2E18 !important;
+        font-family: 'IM Fell English', serif;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+    .stButton button:hover {
+        background-color: #A0522D !important;
+        color: #FFFFFF !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -52,7 +107,7 @@ except Exception as e:
     st.error(f"Błąd połączenia z Google Sheets: {e}")
     st.stop()
 
-st.title("📖 Moja Domowa Książka Kucharska")
+st.title("📜 Staropolska Księga Kucharska")
 
 data_przepisy = ws_przepisy.get_all_records()
 df_przepisy = pd.DataFrame(data_przepisy)
@@ -62,7 +117,6 @@ wybor = st.sidebar.selectbox("Spis treści", menu)
 
 # --- FUNKCJA POMOCNICZA DO PARSOWANIA SKŁADNIKÓW ---
 def parse_skladnik(linijka):
-    """Rozbija linijkę składnika używając ukośnika / lub \ """
     normalizowana = linijka.replace("\\", "/")
     parts = [p.strip() for p in normalizowana.split("/")]
     return parts
@@ -72,7 +126,7 @@ if wybor == "Przeglądaj przepisy":
     st.header("Karta Przepisów")
     
     if df_przepisy.empty or "Nazwa" not in df_przepisy.columns or len(df_przepisy) == 0:
-        st.info("Brak zapisanych przepisów w książce.")
+        st.info("Brak zapisanych przepisów w księdze.")
     else:
         dostepne_kategorie = ["Wszystkie"] + list(df_przepisy["Kategoria"].dropna().unique()) if "Kategoria" in df_przepisy.columns else ["Wszystkie"]
         wybrana_kategoria_filtr = st.selectbox("Wyszukaj po kategorii:", dostepne_kategorie)
@@ -86,7 +140,7 @@ if wybor == "Przeglądaj przepisy":
             if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
                 continue
                 
-            with st.expander(f"📜 {nazwa} [{kategoria}]"):
+            with st.expander(f"✨ {nazwa} [{kategoria}]"):
                 edytuj_klucz = f"edit_mode_{index}"
                 if edytuj_klucz not in st.session_state:
                     st.session_state[edytuj_klucz] = False
@@ -177,7 +231,7 @@ elif wybor == "Dodaj przepis":
                     st.success(f"Dodano przepis: {nowa_nazwa}!")
                     st.rerun()
 
-# --- 3. LISTA ZAKUPÓW Z INTELIGENTNYM SUMOWANIEM ---
+# --- 3. LISTA ZAKUPÓW ---
 elif wybor == "Lista zakupów":
     st.header("🛒 Notatnik Zakupów")
     
@@ -301,7 +355,7 @@ elif wybor == "Co mogę zrobić z...":
                     posiadane_w_przepisie = [s for s in skladniki_przepisu if s in posiadane_produkty]
                     brakujące_w_przepisie = [s for s in skladniki_przepisu if s not in posiadane_produkty]
                     
-                    procent_posiadanych = len(posiadane_w_persipie) / len(skladniki_przepisu) * 100 if 'posiadane_w_persipie' else len(posiadane_w_przepisie) / len(skladniki_przepisu) * 100
+                    procent_posiadanych = len(posiadane_w_przepisie) / len(skladniki_przepisu) * 100
                     
                     if len(brakujące_w_przepisie) == 0:
                         st.success(f"🎉 **{nazwa}** [{kategoria}] (Masz 100% składników!)")
