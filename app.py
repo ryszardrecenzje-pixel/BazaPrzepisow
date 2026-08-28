@@ -10,70 +10,77 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA: STARY PERGAMIN I PISMO RĘCZNE ---
+# --- STYLIZACJA: PERGAMIN I KALIGRAFICZNE PISMO PIÓREM ---
 st.markdown("""
     <style>
-    /* Import czcionki pisanej ręcznie z Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap');
+    /* Import pięknych czcionek imitujących pismo odręczne i starodruk */
+    @import url('https://fonts.googleapis.com/css2?family=Marck+Script&family=IM+Fell+English+SC&family=Special+Elite&display=swap');
 
-    /* Tło całej aplikacji - stary, pożółkły papier */
+    /* Tło całej aplikacji - ciepły, postarzany papier pergaminowy bez kropek/znaków wodnych */
     .stApp {
-        background-color: #F4E8D8;
-        background-image: radial-gradient(#E2CBB5 15%, transparent 16%), radial-gradient(#D6BC9F 15%, transparent 16%);
-        background-size: 24px 24px;
-        background-position: 0 0, 12px 12px;
+        background: linear-gradient(135deg, #F9F1E6 0%, #EFE1CB 100%);
     }
 
-    /* Panel boczny (Sidebar) jako skórzana okładka lub ciemniejsza karta */
+    /* Panel boczny (Sidebar) - imitacja skórzanej okładki/zakładki */
     [data-testid="stSidebar"] {
-        background-color: #E6D3B4;
-        border-right: 3px solid #8B4513;
+        background-color: #E2CEB1;
+        border-right: 3px solid #704214;
     }
 
-    /* Wymuszenie czcionki pisanej ręcznie w nagłówkach i ważnych miejscach */
+    /* Nagłówki - kaligraficzne pismo piórem (Marck Script) */
     h1, h2, h3 {
-        font-family: 'Caveat', cursive !important;
-        color: #4A2E18 !important;
-        letter-spacing: 1px;
+        font-family: 'Marck Script', cursive !important;
+        color: #5C2C16 !important;
+        font-weight: bold;
+        letter-spacing: 1.5px;
         border-bottom: 2px dashed #8B4513;
         padding-bottom: 5px;
+        text-shadow: 1px 1px 1px rgba(139, 69, 19, 0.15);
     }
 
     h1 {
-        font-size: 3rem !important;
+        font-size: 3.5rem !important;
     }
 
-    /* Stylizacja expanderów jako stare karty przepisów */
+    /* Stylizacja expanderów jako karty ze starymi przepisami */
     .streamlit-expanderHeader {
-        background-color: #EFE3D0 !important;
-        border: 1px solid #8B4513 !important;
+        background-color: #F4EAD9 !important;
+        border: 1px solid #A0522D !important;
         border-radius: 4px;
-        font-family: 'IM Fell English', serif !important;
-        color: #3D2314 !important;
+        font-family: 'Marck Script', cursive !important;
+        font-size: 1.3rem !important;
+        color: #4A2E18 !important;
         font-weight: bold;
     }
 
-    /* Teksty w polach i opisach */
+    /* Teksty w aplikacji - stylizowane na rękopis/atrament */
     p, span, label, div, .stMarkdown {
-        font-family: 'IM Fell English', serif;
+        font-family: 'IM Fell English SC', serif;
         color: #3D2314 !important;
     }
 
-    /* Pola formularzy - wygląd starego papieru do pisania */
+    /* Etykiety i składniki w przepisach - czysty, wyrazisty styl pisany piórem */
+    .stMarkdown p, li {
+        font-family: 'Marck Script', cursive !important;
+        font-size: 1.25rem !important;
+        color: #2C160B !important;
+    }
+
+    /* Pola formularzy - styl kartki papieru */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
         background-color: #FFFDF9 !important;
         border: 1px solid #8B4513 !important;
-        color: #3D2314 !important;
-        font-family: 'IM Fell English', serif;
+        color: #2C160B !important;
+        font-family: 'Marck Script', cursive !important;
+        font-size: 1.2rem !important;
     }
 
-    /* Przyciski w stylu retro */
+    /* Przyciski stylizowane na retro */
     .stButton button {
         background-color: #8B4513 !important;
-        color: #F4E8D8 !important;
+        color: #F9F1E6 !important;
         border: 1px solid #4A2E18 !important;
-        font-family: 'IM Fell English', serif;
+        font-family: 'IM Fell English SC', serif;
         font-weight: bold;
         border-radius: 4px;
     }
