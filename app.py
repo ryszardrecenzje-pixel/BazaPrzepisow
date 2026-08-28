@@ -10,26 +10,17 @@ SCOPE = [
 ]
 
 try:
-    # Odczyt danych z sekretów Streamlit Cloud (format TOML)
     creds_dict = dict(st.secrets["gcp_service_account"])
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
     client = gspread.authorize(creds)
     
-    # Otwarcie arkusza (zmień "PrzepisyBaza" jeśli Twój arkusz nazywa się inaczej)
     sheet = client.open("PrzepisyBaza")
     
-    # Pobieramy lub tworzymy arkusze na przepisy i składniki
     try:
         ws_przepisy = sheet.worksheet("Przepisy")
     except gspread.exceptions.WorksheetNotFound:
         ws_przepisy = sheet.add_worksheet(title="Przepisy", rows="100", cols="5")
         ws_przepisy.append_row(["Nazwa", "Składniki", "Instrukcja"])
-
-    try:
-        ws_skladniki = sheet.worksheet("Skladniki")
-    except gspread.exceptions.WorksheetNotFound:
-        ws_skladniki = sheet.add_worksheet(title="Skladniki", rows="100", cols="5")
-        ws_skladniki.append_row(["Przepis", "Składnik"])
 
 except Exception as e:
     st.error(f"Błąd połączenia z Google Sheets: {e}")
@@ -41,7 +32,7 @@ st.title("📖 Moja Baza Przepisów i Lista Zakupów")
 data_przepisy = ws_przepisy.get_all_records()
 df_przepisy = pd.DataFrame(data_przepisy)
 
-menu = ["Przeglądaj przepisy", "Dodaj przepis", "Lista zakupów"]
+menu = ["Przeglądaj przepisy", "Dodaj przepis", "Lista zakupów", "Co mogę zrobić z..."]
 wybor = st.sidebar.selectbox("Menu", menu)
 
 # --- 1. PRZEGLĄDAJ I USUŃ PRZEPISY ---
@@ -60,9 +51,7 @@ if wybor == "Przeglądaj przepisy":
                 st.markdown(f"**Składniki:**\n{skladniki}")
                 st.markdown(f"**Przygotowanie:**\n{instrukcja}")
                 
-                # Przycisk usuwania przepisu
                 if st.button(f"Usuń przepis: {nazwa}", key=f"del_{index}"):
-                    # gspread rows są 1-indexed, a nagłówek to wiersz 1, więc index wiersza to index + 2
                     ws_przepisy.delete_rows(index + 2)
                     st.success(f"Usunięto przepis: {nazwa}")
                     st.rerun()
@@ -81,20 +70,12 @@ elif wybor == "Dodaj przepis":
             if not nowa_nazwa.strip():
                 st.warning("Podaj nazwę przepisu.")
             else:
-                # Sprawdzenie czy przepis już istnieje (zabezpieczenie przed duplikatami)
                 istniejace_nazwy = df_przepisy["Nazwa"].values if not df_przepisy.empty and "Nazwa" in df_przepisy.columns else []
                 
                 if nowa_nazwa.strip() in istniejace_nazwy:
                     st.error(f"Przepis o nazwie '{nowa_nazwa}' już istnieje w bazie! Wybierz inną nazwę.")
                 else:
-                    # Dodanie do arkusza Przepisy
                     ws_przepisy.append_row([nowa_nazwa, skladniki_input, instrukcja_input])
-                    
-                    # Opcjonalnie rozbijamy składniki do osobnego arkusza, jeśli potrzebne
-                    linijki_skladnikow = [s.strip() for s in skladniki_input.split("\n") if s.strip()]
-                    for s in linijki_skladnikow:
-                        ws_skladniki.append_row([nowa_nazwa, s])
-                        
                     st.success(f"Dodano przepis: {nowa_nazwa}!")
                     st.rerun()
 
@@ -107,7 +88,6 @@ elif wybor == "Lista zakupów":
     else:
         st.subheader("Wybierz przepisy, które chcesz ugotować:")
         
-        # Tworzymy checkboxy dla każdego przepisu
         wybrane_przepisy = []
         for index, row in df_przepisy.iterrows():
             nazwa = row.get("Nazwa", "")
@@ -118,7 +98,6 @@ elif wybor == "Lista zakupów":
             st.markdown("---")
             st.subheader("Składniki do kupienia:")
             
-            # Zbieramy składniki z wybranych przepisów
             zsumowane_skladniki = []
             for nazwa in wybrane_przepisy:
                 przepis_row = df_przepisy[df_przepisy["Nazwa"] == nazwa]
@@ -128,12 +107,10 @@ elif wybor == "Lista zakupów":
                     for linijka in linijki:
                         zsumowane_skladniki.append(f"- [ ] {linijka} ({nazwa})")
             
-            # Wyświetlenie listy na ekranie
             tekst_listy = "\n".join(zsumowane_skladniki)
             st.markdown(tekst_listy)
             
             st.markdown("---")
-            # Przycisk do pobrania listy w formie notatnika (TXT)
             st.download_button(
                 label="📥 Pobierz listę zakupów jako notatnik (.txt)",
                 data=tekst_listy,
@@ -142,3 +119,62 @@ elif wybor == "Lista zakupów":
             )
         else:
             st.info("Zaznacz przynajmniej jeden przepis powyżej, aby wygenerować listę zakupów.")
+
+# --- 4. CO MOGĘ ZROBIĆ Z... (DOPASOWYWANIE SKŁADNIKÓW) ---
+elif wybor == "Co mogę zrobić z...":
+    st.header("🍳 Co mogę ugotować z tego, co mam?")
+    
+    if df_przepisy.empty or "Nazwa" not in df_przepisy.columns or len(df_przepisy) == 0:
+        st.info("Brak zapisanych przepisów w bazie.")
+    else:
+        # Zbieramy wszystkie unikalne składniki ze wszystkich przepisów, aby stworzyć listę wyboru
+        wszystkie_skladniki = set()
+        for _, row in df_przepisy.iterrows():
+            skladniki_tekst = row.get("Składniki", "")
+            linijki = [s.strip().lower() for s in skladniki_tekst.split("\n") if s.strip()]
+            for l in linijki:
+                wszystkie_skladniki.add(l)
+                
+        st.subheader("Zaznacz produkty, które masz pod ręką:")
+        
+        # Wyświetlamy checkboxy dla znalezionych składników w kolumnach lub pod spodem
+        posiadane_produkty = []
+        
+        # Użyjemy kontenera z przewijaniem lub zwykłej pętli
+        for skladnik in sorted(wszystkie_skladniki):
+            if st.checkbox(f"{skladnik}", key=f"have_{skladnik}"):
+                posiadane_produkty.append(skladnik)
+                
+        st.markdown("---")
+        st.subheader("Wyniki - co możesz zrobić:")
+        
+        if not posiadane_produkty:
+            st.warning("Zaznacz przynajmniej jeden produkt powyżej, aby sprawdzić dostępne przepisy.")
+        else:
+            mozliwe_przepisy = 0
+            
+            for _, row in df_przepisy.iterrows():
+                nazwa = row.get("Nazwa", "")
+                skladniki_tekst = row.get("Składniki", "")
+                
+                # Wyciągamy składniki danego przepisu
+                skladniki_przepisu = [s.strip().lower() for s in skladniki_tekst.split("\n") if s.strip()]
+                
+                if skladniki_przepisu:
+                    # Sprawdzamy, które składniki przepisu posiadamy, a których brakuje
+                    posiadane_w_przepisie = [s for s in skladniki_przepisu if s in posiadane_produkty]
+                    brakujące_w_przepisie = [s for s in skladniki_przepisu if s not in posiadane_produkty]
+                    
+                    # Logika dopasowania: np. pokazujemy przepisy, do których masz WSZYSTKIE składniki LUB większość
+                    # Tutaj zrobimy czytelny podział:
+                    procent_posiadanych = len(posiadane_w_przepisie) / len(skladniki_przepisu) * 100
+                    
+                    if len(brakujące_w_przepisie) == 0:
+                        st.success(f"🎉 **{nazwa}** (Masz 100% składników!)")
+                        mozliwe_przepisy += 1
+                    elif procent_posiadanych >= 50:
+                        st.info(f"💡 **{nazwa}** (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})")
+                        mozliwe_przepisy += 1
+                        
+            if mozliwe_przepisy == 0:
+                st.error("Nie znaleziono przepisów pasujących do zaznaczonych składników (spróbuj zaznaczyć ich więcej).")
