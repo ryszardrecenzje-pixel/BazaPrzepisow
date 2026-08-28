@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA (NAPRAWA KONTRASTU I WIDOCZNOŚCI TEKSTU) ---
+# --- STYLIZACJA (IDEALNY KONTRAST: JASNE TŁO + CIEMNY TEKST W SIDEBARZE) ---
 st.markdown("""
     <style>
     /* Tło całej aplikacji - jasny, stary brąz z czytelnym wzorem */
@@ -23,13 +23,19 @@ st.markdown("""
         font-family: 'Georgia', serif;
     }
     
-    /* Panel boczny (Sidebar) */
+    /* Panel boczny (Sidebar) – jaśniejsze tło i CIEMNY tekst (żeby lista rozwijana była czytelna) */
     [data-testid="stSidebar"] {
-        background-color: #2A1A12;
-        border-right: 2px solid #D4AF37;
+        background-color: #D2B48C;
+        border-right: 2px solid #5C3A29;
     }
     [data-testid="stSidebar"] * {
-        color: #FFF8DC !important;
+        color: #2A1A12 !important;
+    }
+    /* Wyjątek dla pola selectbox w sidebarze, żeby miało ciemny tekst */
+    [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] {
+        background-color: #F4E8D8 !important;
+        color: #2A1A12 !important;
+        border: 1px solid #5C3A29 !important;
     }
     
     /* Nagłówki - wyraziste antyczne złoto */
@@ -41,12 +47,12 @@ st.markdown("""
         text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     }
     
-    /* WSZYSTKIE TEKSTY, ETYKIETY I CHECKBOXY - JASNE I CZYTELNE */
+    /* Teksty w głównej części aplikacji */
     p, span, label, div, .stMarkdown, .stCheckbox span, .stRadio label {
         color: #FFF8DC !important;
     }
     
-    /* Pola formularzy i pola tekstowe */
+    /* Pola formularzy i pola tekstowe w głównej części */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
         background-color: #5C3A29 !important;
         border: 1px solid #D4AF37 !important;
@@ -88,7 +94,7 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Komunikaty systemowe (sukces, info, ostrzeżenia) */
+    /* Komunikaty systemowe */
     .stAlert {
         background-color: #5C3A29 !important;
         color: #FFF8DC !important;
