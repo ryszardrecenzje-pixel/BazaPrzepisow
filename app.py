@@ -48,20 +48,17 @@ if wybor == "Przeglądaj przepisy":
             nazwa = row.get("Nazwa", "Bez nazwy")
             kategoria = row.get("Kategoria", "Inne")
             skladniki = row.get("Składniki", "")
-            # Poprawione pobieranie z kolumny "Przygotowanie"
             przygotowanie = row.get("Przygotowanie", "")
             
             if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
                 continue
                 
             with st.expander(f"🍽️ {nazwa} ({kategoria})"):
-                # Sprawdzamy, czy użytkownik kliknął edycję tego konkretnego przepisu
                 edytuj_klucz = f"edit_mode_{index}"
                 if edytuj_klucz not in st.session_state:
                     st.session_state[edytuj_klucz] = False
                 
                 if not st.session_state[edytuj_klucz]:
-                    # Widok normalny
                     st.markdown(f"**Kategoria:** {kategoria}")
                     st.markdown(f"**Składniki:**\n{skladniki}")
                     st.markdown(f"**Przygotowanie:**\n{przygotowanie}")
@@ -77,7 +74,6 @@ if wybor == "Przeglądaj przepisy":
                             st.success(f"Usunięto przepis: {nazwa}")
                             st.rerun()
                 else:
-                    # Widok edycji
                     st.subheader("Edycja przepisu")
                     with st.form(key=f"form_edit_{index}"):
                         nowa_nazwa = st.text_input("Nazwa przepisu", value=nazwa)
@@ -94,7 +90,6 @@ if wybor == "Przeglądaj przepisy":
                         anuluj = col_anuluj.form_submit_button("Anuluj")
                         
                         if zapisz_zmiany:
-                            # Aktualizacja wiersza w arkuszu (index + 2 bo gspread jest od 1 i mamy nagłówek)
                             row_num = index + 2
                             ws_przepisy.update_cell(row_num, 1, nowa_nazwa)
                             ws_przepisy.update_cell(row_num, 2, nowa_kategoria)
@@ -121,7 +116,7 @@ elif wybor == "Dodaj przepis":
         przygotowanie_input = st.text_area("Przygotowanie", help="Opisz krok po kroku jak wykonać przepis.")
         
         st.markdown("### Składniki")
-        st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `3 | plastry | boczek`)")
+        st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `500 | g | mąka pszenna`)")
         skladniki_input = st.text_area("Lista składników (każdy w nowej linii)")
         
         submit = st.form_submit_button("Zapisz przepis")
@@ -135,12 +130,11 @@ elif wybor == "Dodaj przepis":
                 if nowa_nazwa.strip() in istniejace_nazwy:
                     st.error(f"Przepis o nazwie '{nowa_nazwa}' już istnieje w bazie!")
                 else:
-                    # Kolejność zapisu zgodna z kolumnami: Nazwa, Kategoria, Składniki, Przygotowanie
                     ws_przepisy.append_row([nowa_nazwa, kategoria_input, skladniki_input, przygotowanie_input])
                     st.success(f"Dodano przepis: {nowa_nazwa}!")
                     st.rerun()
 
-# --- 3. LISTA ZAKUPÓW ---
+# --- 3. LISTA ZAKUPÓW Z INTELIGENTNYM SUMOWANIEM ---
 elif wybor == "Lista zakupów":
     st.header("🛒 Generator Listy Zakupów")
     
@@ -157,9 +151,11 @@ elif wybor == "Lista zakupów":
                 
         if wybrane_przepisy:
             st.markdown("---")
-            st.subheader("Składniki do kupienia:")
+            st.subheader("Zsumowana lista zakupów:")
             
-            zsumowane_skladniki = []
+            # Słownik do przechowywania zsumowanych produktów: { (produkt, jednostka): suma }
+            slownik_zakupow = {}
+            
             for nazwa in wybrane_przepisy:
                 przepis_row = df_przepisy[df_przepisy["Nazwa"] == nazwa]
                 if not przepis_row.empty:
@@ -167,7 +163,49 @@ elif wybor == "Lista zakupów":
                     linijki = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
                     
                     for linijka in linijki:
-                        zsumowane_skladniki.append(f"- [ ] {linijka} (do przepisu: {nazwa})")
+                        # Rozbijamy wpis po |
+                        parts = [p.strip() for p in linijka.split("|")]
+                        if len(parts) == 3:
+                            ilosc_str, jednostka, produkt = parts
+                            produkt_lower = produkt.lower()
+                            jednostka_lower = jednostka.lower()
+                            
+                            try:
+                                ilosc = float(ilosc_str.replace(",", "."))
+                                
+                                # Inteligentne przeliczanie gramów na kilogramy
+                                if jednostka_lower == "g" and ilosc >= 1000:
+                                    ilosc = ilosc / 1000
+                                    jednostka_lower = "kg"
+                                # Przeliczanie mililitrów na litry
+                                elif jednostka_lower == "ml" and ilosc >= 1000:
+                                    ilosc = ilosc / 1000
+                                    jednostka_lower = "l"
+                                    
+                                klucz = (produkt_lower, jednostka_lower)
+                                if klucz in slownik_zakupow:
+                                    slownik_zakupow[klucz] += ilosc
+                                else:
+                                    slownik_zakupow[klucz] = ilosc
+                                    
+                            except ValueError:
+                                # Jeśli ilość nie jest liczbą, traktujemy wpis tekstowo
+                                klucz = (linijka, "")
+                                slownik_zakupow[klucz] = 1
+                        else:
+                            # Jeśli brak formatu z |, dodajemy w całości
+                            klucz = (linijka, "")
+                            slownik_zakupow[klucz] = 1
+            
+            # Generujemy ostateczną listę do wyświetlenia i pobrania
+            zsumowane_skladniki = []
+            for (produkt, jednostka), ilosc in sorted(slownik_zakupow.items()):
+                if jednostka == "":
+                    zsumowane_skladniki.append(f"- [ ] {produkt}")
+                else:
+                    # Ładne wyświetlanie liczb (usuwanie zbędnych .0 jeśli to całkowita liczba)
+                    ilosc_formatted = int(ilosc) if ilosc.is_integer() else round(ilosc, 2)
+                    zsumowane_skladniki.append(f"- [ ] {ilosc_formatted} {jednostka} | {produkt}")
             
             tekst_listy = "\n".join(zsumowane_skladniki)
             st.markdown(tekst_listy)
