@@ -10,28 +10,27 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA: PERGAMIN, CIENIOWANIE I OZDOBNA RAMKA ---
+# --- STYLIZACJA: OZDOBNA RAMKA DOKOŁA STRONY ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=IM+Fell+English+SC&display=swap');
 
-    /* Tło z cieniowaniem krawędzi */
+    /* Tło pergaminu i ozdobna podwójna ramka wokół całego okna aplikacji */
     .stApp {
         background-color: #D4B895;
         background-image: 
             radial-gradient(circle, rgba(255,243,224,0.35) 20%, rgba(60,25,8,0.8) 90%),
             linear-gradient(to right, rgba(40,15,5,0.7), transparent 12%, transparent 88%, rgba(40,15,5,0.7));
+        border: 16px solid #3D1C06;
+        box-shadow: inset 0 0 50px rgba(20, 5, 1, 0.8);
     }
 
-    /* Efekt ozdobnej ramki wokół całej treści / strony (imitacja starego dokumentu z ryciny) */
-    .main .block-container {
-        border: 12px solid #3D1C06;
-        border-image: linear-gradient(to bottom right, #5C2C16, #2C1203, #3D1C06) 1;
-        padding: 2.5rem 3rem;
-        background-color: rgba(249, 241, 230, 0.15);
-        box-shadow: inset 0 0 40px rgba(30, 10, 2, 0.5), 0 10px 25px rgba(0, 0, 0, 0.4);
-        margin-top: 1rem;
-        margin-bottom: 1rem;
+    /* Dodatkowa wewnętrzna ramka dla efektu starej ryciny */
+    .block-container {
+        border: 2px solid #704214;
+        padding: 2rem 3rem !important;
+        background-color: rgba(249, 241, 230, 0.12);
+        margin: 15px !important;
         border-radius: 2px;
     }
 
