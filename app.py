@@ -3,12 +3,68 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 
-# --- KONFIGURACJA STRONY (Tytuł w karcie przeglądarki i ikona) ---
+# --- KONFIGURACJA STRONY ---
 st.set_page_config(
     page_title="Książka Kucharska",
     page_icon="📖",
     layout="wide"
 )
+
+# --- STYLIZACJA W STYLU STAREJ KSIĄŻKI KUCHARSKIEJ (CSS) ---
+st.markdown("""
+    <style>
+    /* Tło całej aplikacji - ciepły, pergaminowy odcień */
+    .stApp {
+        background-color: #FDFBF7;
+        color: #2C221E;
+        font-family: 'Georgia', serif;
+    }
+    
+    /* Panel boczny (Sidebar) */
+    [data-testid="stSidebar"] {
+        background-color: #F4EBE1;
+        border-right: 2px solid #D2B48C;
+    }
+    
+    /* Nagłówki */
+    h1, h2, h3 {
+        font-family: 'Georgia', serif;
+        color: #4A2E18;
+        border-bottom: 2px solid #D2B48C;
+        padding-bottom: 5px;
+    }
+    
+    /* Pola formularzy i przyciski */
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #C7A17A !important;
+        color: #2C221E !important;
+        font-family: 'Georgia', serif;
+    }
+    
+    /* Przyciski */
+    .stButton button {
+        background-color: #8B4513 !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        font-family: 'Georgia', serif;
+        border-radius: 4px;
+    }
+    .stButton button:hover {
+        background-color: #A0522D !important;
+    }
+    
+    /* Expandery (przepisy) */
+    .streamlit-expanderHeader {
+        background-color: #F4EBE1 !important;
+        border: 1px solid #D2B48C !important;
+        border-radius: 4px;
+        font-family: 'Georgia', serif;
+        color: #4A2E18 !important;
+        font-weight: bold;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- KONFIGURACJA POŁĄCZENIA Z GOOGLE SHEETS ---
 SCOPE = [
@@ -33,23 +89,23 @@ except Exception as e:
     st.error(f"Błąd połączenia z Google Sheets: {e}")
     st.stop()
 
-st.title("📖 Moja Baza Przepisów i Lista Zakupów")
+st.title("📖 Moja Domowa Książka Kucharska")
 
 data_przepisy = ws_przepisy.get_all_records()
 df_przepisy = pd.DataFrame(data_przepisy)
 
 menu = ["Przeglądaj przepisy", "Dodaj przepis", "Lista zakupów", "Co mogę zrobić z..."]
-wybor = st.sidebar.selectbox("Menu", menu)
+wybor = st.sidebar.selectbox("Spis treści", menu)
 
 # --- 1. PRZEGLĄDAJ, USUŃ I EDYTUJ PRZEPISY ---
 if wybor == "Przeglądaj przepisy":
-    st.header("Twoje przepisy")
+    st.header("Karta Przepisów")
     
     if df_przepisy.empty or "Nazwa" not in df_przepisy.columns or len(df_przepisy) == 0:
-        st.info("Brak zapisanych przepisów.")
+        st.info("Brak zapisanych przepisów w książce.")
     else:
         dostepne_kategorie = ["Wszystkie"] + list(df_przepisy["Kategoria"].dropna().unique()) if "Kategoria" in df_przepisy.columns else ["Wszystkie"]
-        wybrana_kategoria_filtr = st.selectbox("Filtruj według kategorii:", dostepne_kategorie)
+        wybrana_kategoria_filtr = st.selectbox("Wyszukaj po kategorii:", dostepne_kategorie)
         
         for index, row in df_przepisy.iterrows():
             nazwa = row.get("Nazwa", "Bez nazwy")
@@ -60,7 +116,7 @@ if wybor == "Przeglądaj przepisy":
             if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
                 continue
                 
-            with st.expander(f"🍽️ {nazwa} ({kategoria})"):
+            with st.expander(f"📜 {nazwa} [{kategoria}]"):
                 edytuj_klucz = f"edit_mode_{index}"
                 if edytuj_klucz not in st.session_state:
                     st.session_state[edytuj_klucz] = False
@@ -69,7 +125,6 @@ if wybor == "Przeglądaj przepisy":
                     st.markdown(f"**Kategoria:** {kategoria}")
                     
                     st.markdown("**Składniki:**")
-                    # Rozbijamy składniki linijka po linijce, aby wyświetlić je w czytelnej liście punktowanej
                     linijki_skladnikow = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
                     for s in linijki_skladnikow:
                         parts = [p.strip() for p in s.split("|")]
@@ -124,7 +179,7 @@ if wybor == "Przeglądaj przepisy":
 
 # --- 2. DODAJ PRZEPIS ---
 elif wybor == "Dodaj przepis":
-    st.header("Dodaj nowy przepis")
+    st.header("Dopisz nowy przepis do księgi")
     
     with st.form("form_dodania"):
         nowa_nazwa = st.text_input("Nazwa przepisu")
@@ -137,7 +192,7 @@ elif wybor == "Dodaj przepis":
         st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `500 | g | mąka pszenna`)")
         skladniki_input = st.text_area("Lista składników (każdy w nowej linii)")
         
-        submit = st.form_submit_button("Zapisz przepis")
+        submit = st.form_submit_button("Zapisz w księdze")
         
         if submit:
             if not nowa_nazwa.strip():
@@ -146,7 +201,7 @@ elif wybor == "Dodaj przepis":
                 istniejace_nazwy = df_przepisy["Nazwa"].values if not df_przepisy.empty and "Nazwa" in df_przepisy.columns else []
                 
                 if nowa_nazwa.strip() in istniejace_nazwy:
-                    st.error(f"Przepis o nazwie '{nowa_nazwa}' już istnieje w bazie!")
+                    st.error(f"Przepis o nazwie '{nowa_nazwa}' już istnieje w księdze!")
                 else:
                     ws_przepisy.append_row([nowa_nazwa, kategoria_input, skladniki_input, przygotowanie_input])
                     st.success(f"Dodano przepis: {nowa_nazwa}!")
@@ -154,12 +209,12 @@ elif wybor == "Dodaj przepis":
 
 # --- 3. LISTA ZAKUPÓW Z INTELIGENTNYM SUMOWANIEM ---
 elif wybor == "Lista zakupów":
-    st.header("🛒 Generator Listy Zakupów")
+    st.header("🛒 Notatnik Zakupów")
     
     if df_przepisy.empty or "Nazwa" not in df_przepisy.columns or len(df_przepisy) == 0:
         st.info("Brak przepisów, aby wygenerować listę zakupów.")
     else:
-        st.subheader("Wybierz przepisy, które chcesz ugotować:")
+        st.subheader("Wybierz przepisy na nadchodzące gotowanie:")
         
         wybrane_przepisy = []
         for index, row in df_przepisy.iterrows():
@@ -169,7 +224,7 @@ elif wybor == "Lista zakupów":
                 
         if wybrane_przepisy:
             st.markdown("---")
-            st.subheader("Zsumowana lista zakupów:")
+            st.subheader("Zsumowana lista potrzebnych produktów:")
             
             slownik_zakupow = {}
             
@@ -222,7 +277,7 @@ elif wybor == "Lista zakupów":
             
             st.markdown("---")
             st.download_button(
-                label="📥 Pobierz listę zakupów jako notatnik (.txt)",
+                label="📥 Pobierz listę zakupów (.txt)",
                 data=tekst_listy,
                 file_name="lista_zakupow.txt",
                 mime="text/plain"
@@ -232,10 +287,10 @@ elif wybor == "Lista zakupów":
 
 # --- 4. CO MOGĘ ZROBIĆ Z... ---
 elif wybor == "Co mogę zrobić z...":
-    st.header("🍳 Co mogę ugotować z tego, co mam?")
+    st.header("🍳 Spiżarnia – Co ugotować?")
     
     if df_przepisy.empty or "Nazwa" not in df_przepisy.columns or len(df_przepisy) == 0:
-        st.info("Brak zapisanych przepisów w bazie.")
+        st.info("Brak zapisanych przepisów w księdze.")
     else:
         wszystkie_skladniki = set()
         for _, row in df_przepisy.iterrows():
@@ -254,7 +309,7 @@ elif wybor == "Co mogę zrobić z...":
                 posiadane_produkty.append(skladnik)
                 
         st.markdown("---")
-        st.subheader("Wyniki - co możesz zrobić:")
+        st.subheader("Propozycje z Twojej spiżarni:")
         
         if not posiadane_produkty:
             st.warning("Zaznacz przynajmniej jeden produkt powyżej.")
@@ -282,7 +337,7 @@ elif wybor == "Co mogę zrobić z...":
                         st.success(f"🎉 **{nazwa}** [{kategoria}] (Masz 100% składników!)")
                         mozliwe_przepisy += 1
                     elif procent_posiadanych >= 50:
-                        st.info(f"💡 **{nazwa}** [{kategoria}] (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})")
+                        st.info(f"💡 **{nazwa}** [{kategoria}] (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})
                         mozliwe_przepisy += 1
                         
             if mozliwe_przepisy == 0:
