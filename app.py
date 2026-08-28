@@ -47,7 +47,7 @@ if wybor == "Przeglądaj przepisy":
         for index, row in df_przepisy.iterrows():
             nazwa = row.get("Nazwa", "Bez nazwy")
             kategoria = row.get("Kategoria", "Inne")
-            skladniki = row.get("Składniki", "")
+            skladniki_tekst = row.get("Składniki", "")
             przygotowanie = row.get("Przygotowanie", "")
             
             if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
@@ -60,8 +60,19 @@ if wybor == "Przeglądaj przepisy":
                 
                 if not st.session_state[edytuj_klucz]:
                     st.markdown(f"**Kategoria:** {kategoria}")
-                    st.markdown(f"**Składniki:**\n{skladniki}")
-                    st.markdown(f"**Przygotowanie:**\n{przygotowanie}")
+                    
+                    st.markdown("**Składniki:**")
+                    # Rozbijamy składniki linijka po linijce, aby wyświetlić je w czytelnej liście punktowanej
+                    linijki_skladnikow = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
+                    for s in linijki_skladnikow:
+                        parts = [p.strip() for p in s.split("|")]
+                        if len(parts) == 3:
+                            ilosc, jednostka, produkt = parts
+                            st.markdown(f"- **{ilosc} {jednostka}** – {produkt}")
+                        else:
+                            st.markdown(f"- {s}")
+                            
+                    st.markdown(f"\n**Przygotowanie:**\n{przygotowanie}")
                     
                     col1, col2 = st.columns(2)
                     with col1:
@@ -83,7 +94,7 @@ if wybor == "Przeglądaj przepisy":
                         nowa_kategoria = st.selectbox("Kategoria posiłku", kategorie_opcje, index=kat_index)
                         
                         nowe_przygotowanie = st.text_area("Przygotowanie", value=przygotowanie)
-                        nowe_skladniki = st.text_area("Składniki", value=skladniki)
+                        nowe_skladniki = st.text_area("Składniki", value=skladniki_tekst)
                         
                         col_zapisz, col_anuluj = st.columns(2)
                         zapisz_zmiany = col_zapisz.form_submit_button("Zapisz zmiany")
@@ -153,7 +164,6 @@ elif wybor == "Lista zakupów":
             st.markdown("---")
             st.subheader("Zsumowana lista zakupów:")
             
-            # Słownik do przechowywania zsumowanych produktów: { (produkt, jednostka): suma }
             slownik_zakupow = {}
             
             for nazwa in wybrane_przepisy:
@@ -163,7 +173,6 @@ elif wybor == "Lista zakupów":
                     linijki = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
                     
                     for linijka in linijki:
-                        # Rozbijamy wpis po |
                         parts = [p.strip() for p in linijka.split("|")]
                         if len(parts) == 3:
                             ilosc_str, jednostka, produkt = parts
@@ -173,11 +182,9 @@ elif wybor == "Lista zakupów":
                             try:
                                 ilosc = float(ilosc_str.replace(",", "."))
                                 
-                                # Inteligentne przeliczanie gramów na kilogramy
                                 if jednostka_lower == "g" and ilosc >= 1000:
                                     ilosc = ilosc / 1000
                                     jednostka_lower = "kg"
-                                # Przeliczanie mililitrów na litry
                                 elif jednostka_lower == "ml" and ilosc >= 1000:
                                     ilosc = ilosc / 1000
                                     jednostka_lower = "l"
@@ -189,21 +196,17 @@ elif wybor == "Lista zakupów":
                                     slownik_zakupow[klucz] = ilosc
                                     
                             except ValueError:
-                                # Jeśli ilość nie jest liczbą, traktujemy wpis tekstowo
                                 klucz = (linijka, "")
                                 slownik_zakupow[klucz] = 1
                         else:
-                            # Jeśli brak formatu z |, dodajemy w całości
                             klucz = (linijka, "")
                             slownik_zakupow[klucz] = 1
             
-            # Generujemy ostateczną listę do wyświetlenia i pobrania
             zsumowane_skladniki = []
             for (produkt, jednostka), ilosc in sorted(slownik_zakupow.items()):
                 if jednostka == "":
                     zsumowane_skladniki.append(f"- [ ] {produkt}")
                 else:
-                    # Ładne wyświetlanie liczb (usuwanie zbędnych .0 jeśli to całkowita liczba)
                     ilosc_formatted = int(ilosc) if ilosc.is_integer() else round(ilosc, 2)
                     zsumowane_skladniki.append(f"- [ ] {ilosc_formatted} {jednostka} | {produkt}")
             
