@@ -337,7 +337,7 @@ elif wybor == "Co mogę zrobić z...":
                         st.success(f"🎉 **{nazwa}** [{kategoria}] (Masz 100% składników!)")
                         mozliwe_przepisy += 1
                     elif procent_posiadanych >= 50:
-                        st.info(f"💡 **{nazwa}** [{kategoria}] (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})
+                        st.info(f"💡 **{nazwa}** [{kategoria}] (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})")
                         mozliwe_przepisy += 1
                         
             if mozliwe_przepisy == 0:
