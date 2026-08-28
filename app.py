@@ -10,13 +10,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA: PERGAMIN Z CIENIOWANYMI BRZEGAMI I PISMO ODRĘCZNE PIÓREM ---
+# --- STYLIZACJA: PERGAMIN I CZYSTE EXPANDERY ---
 st.markdown("""
     <style>
-    /* Import czcionek imitujących pismo odręczne i starodruk */
     @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=IM+Fell+English+SC&display=swap');
 
-    /* Tło z mocnym cieniowaniem krawędzi (efekt starego pergaminu / fototapety) */
+    /* Tło z cieniowaniem krawędzi */
     .stApp {
         background-color: #D4B895;
         background-image: 
@@ -24,13 +23,13 @@ st.markdown("""
             linear-gradient(to right, rgba(40,15,5,0.7), transparent 12%, transparent 88%, rgba(40,15,5,0.7));
     }
 
-    /* Panel boczny (Sidebar) - imitacja skórzanej zakładki */
+    /* Panel boczny */
     [data-testid="stSidebar"] {
         background-color: #E2CEB1;
         border-right: 3px solid #5C2C16;
     }
 
-    /* Nagłówki - kaligraficzne pismo piórem */
+    /* Nagłówki główne */
     h1, h2, h3 {
         font-family: 'Caveat', cursive !important;
         color: #3D1C06 !important;
@@ -44,25 +43,28 @@ st.markdown("""
         font-size: 3.5rem !important;
     }
 
-    /* Zwykłe teksty, etykiety i zawartość - czcionka imitująca pismo odręczne piórem */
-    p, span, label, .stMarkdown, .stMarkdown p, li {
+    /* Standardowy tekst w aplikacji */
+    p, label, .stMarkdown, .stMarkdown p, li {
         font-family: 'Caveat', cursive !important;
         font-size: 1.35rem !important;
         color: #2C1203 !important;
     }
 
-    /* Expandery jako karty przepisów (bez psucia ikon Streamlita) */
-    .streamlit-expanderHeader {
-        background-color: #EFE0C4 !important;
-        border: 1px solid #704214 !important;
-        border-radius: 4px;
+    /* Pudełka rozwijane (Expandery) - czysta czcionka bez nakładania ikon */
+    .streamlit-expanderHeader p {
         font-family: 'Caveat', cursive !important;
         font-size: 1.4rem !important;
         color: #3D1C06 !important;
         font-weight: bold;
     }
+    
+    .streamlit-expanderHeader {
+        background-color: #EFE0C4 !important;
+        border: 1px solid #704214 !important;
+        border-radius: 4px;
+    }
 
-    /* Pola formularzy - styl kartki papieru */
+    /* Pola formularzy */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
         background-color: #FFFDF9 !important;
         border: 1px solid #704214 !important;
@@ -71,7 +73,7 @@ st.markdown("""
         font-size: 1.25rem !important;
     }
 
-    /* Przyciski stylizowane na retro */
+    /* Przyciski */
     .stButton button {
         background-color: #704214 !important;
         color: #F9F1E6 !important;
@@ -118,7 +120,6 @@ df_przepisy = pd.DataFrame(data_przepisy)
 menu = ["Przeglądaj przepisy", "Dodaj przepis", "Lista zakupów", "Co mogę zrobić z..."]
 wybor = st.sidebar.selectbox("Spis treści", menu)
 
-# --- FUNKCJA POMOCNICZA DO PARSOWANIA SKŁADNIKÓW ---
 def parse_skladnik(linijka):
     normalizowana = linijka.replace("\\", "/")
     parts = [p.strip() for p in normalizowana.split("/")]
@@ -143,7 +144,8 @@ if wybor == "Przeglądaj przepisy":
             if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
                 continue
                 
-            with st.expander(f"✨ {nazwa} [{kategoria}]"):
+            # Usunięto emotkę ze środka, aby uniknąć błędów renderowania czcionki
+            with st.expander(f"{nazwa}  [{kategoria}]"):
                 edytuj_klucz = f"edit_mode_{index}"
                 if edytuj_klucz not in st.session_state:
                     st.session_state[edytuj_klucz] = False
