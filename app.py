@@ -55,20 +55,21 @@ if wybor == "Przeglądaj przepisy":
                     st.success(f"Usunięto przepis: {nazwa}")
                     st.rerun()
 
-# --- 2. DODAJ PRZEPIS (Z JEDNOSTKAMI) ---
+# --- 2. DODAJ PRZEPIS (POPRAWIONA KOLEJNOŚĆ PÓL) ---
 elif wybor == "Dodaj przepis":
-    st.header("Dodaj nowy przepis z uwzględnieniem jednostek")
+    st.header("Dodaj nowy przepis")
     
     with st.form("form_dodania"):
         nowa_nazwa = st.text_input("Nazwa przepisu")
         
+        # NAJPIERW SPOSÓB PRZYGOTOWANIA (górne pole tekstowe)
+        instrukcja_input = st.text_area("Sposób przygotowania", help="Opisz krok po kroku jak wykonać przepis.")
+        
+        # POTEM SKŁADNIKI (dolne pole tekstowe)
         st.markdown("### Składniki")
         st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `3 | plastry | boczek` lub `200 | g | ser mozzarella`)")
+        skladniki_input = st.text_area("Lista składników (każdy w nowej linii)")
         
-        skladniki_input = st.text_area("Lista składników (każdy w nowej linii)", 
-                                       help="Np:\n3 | plastry | boczek\n1 | szt. | cebula\n200 | g | makaron")
-        
-        instrukcja_input = st.text_area("Sposób przygotowania")
         submit = st.form_submit_button("Zapisz przepis")
         
         if submit:
@@ -80,11 +81,12 @@ elif wybor == "Dodaj przepis":
                 if nowa_nazwa.strip() in istniejace_nazwy:
                     st.error(f"Przepis o nazwie '{nowa_nazwa}' już istnieje w bazie!")
                 else:
+                    # Zapis w odpowiedniej kolejności kolumn: Nazwa, Składniki, Instrukcja
                     ws_przepisy.append_row([nowa_nazwa, skladniki_input, instrukcja_input])
                     st.success(f"Dodano przepis: {nowa_nazwa}!")
                     st.rerun()
 
-# --- 3. LISTA ZAKUPÓW Z UWZGLĘDNIENIEM JEDNOSTEK ---
+# --- 3. LISTA ZAKUPÓW ---
 elif wybor == "Lista zakupów":
     st.header("🛒 Generator Listy Zakupów")
     
@@ -101,7 +103,7 @@ elif wybor == "Lista zakupów":
                 
         if wybrane_przepisy:
             st.markdown("---")
-            st.subheader("Składniki do kupienia (z uwzględnieniem jednostek):")
+            st.subheader("Składniki do kupienia:")
             
             zsumowane_skladniki = []
             for nazwa in wybrane_przepisy:
@@ -111,7 +113,6 @@ elif wybor == "Lista zakupów":
                     linijki = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
                     
                     for linijka in linijki:
-                        # Jeśli używamy formatu z kreską pionową (|), ładnie to sformatujemy
                         zsumowane_skladniki.append(f"- [ ] {linijka} (do przepisu: {nazwa})")
             
             tekst_listy = "\n".join(zsumowane_skladniki)
@@ -137,9 +138,8 @@ elif wybor == "Co mogę zrobić z...":
         wszystkie_skladniki = set()
         for _, row in df_przepisy.iterrows():
             skladniki_tekst = row.get("Składniki", "")
-            linijki = [s.strip() for s in skladniki_tekst.split("\n") if s.strip()]
+            linijki = [s.strip().lower() for s in skladniki_tekst.split("\n") if s.strip()]
             for l in linijki:
-                # Wyciągamy samą nazwę produktu (ostatnia część po znaku | jeśli jest używany)
                 parts = [p.strip().lower() for p in l.split("|")]
                 produkt = parts[-1] if len(parts) > 0 else l.lower()
                 wszystkie_skladniki.add(produkt)
@@ -149,7 +149,7 @@ elif wybor == "Co mogę zrobić z...":
         posiadane_produkty = []
         for skladnik in sorted(wszystkie_skladniki):
             if st.checkbox(f"{skladnik}", key=f"have_{skladnik}"):
-                posiadane_produkty.append(skladnik)
+                posiadane_produkty.append(skkladnik if 'skkladnik' in locals() else skladnik)
                 
         st.markdown("---")
         st.subheader("Wyniki - co możesz zrobić:")
@@ -180,7 +180,6 @@ elif wybor == "Co mogę zrobić z...":
                         mozliwe_przepisy += 1
                     elif procent_posiadanych >= 50:
                         st.info(f"💡 **{nazwa}** (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})")
-                        mozliwe_priv = True
                         mozliwe_przepisy += 1
                         
             if mozliwe_przepisy == 0:
