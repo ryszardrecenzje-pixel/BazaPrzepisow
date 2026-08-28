@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA: PERGAMIN I CZYSTE EXPANDERY ---
+# --- STYLIZACJA: PERGAMIN, CIENIOWANIE I OZDOBNA RAMKA ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=IM+Fell+English+SC&display=swap');
@@ -21,6 +21,18 @@ st.markdown("""
         background-image: 
             radial-gradient(circle, rgba(255,243,224,0.35) 20%, rgba(60,25,8,0.8) 90%),
             linear-gradient(to right, rgba(40,15,5,0.7), transparent 12%, transparent 88%, rgba(40,15,5,0.7));
+    }
+
+    /* Efekt ozdobnej ramki wokół całej treści / strony (imitacja starego dokumentu z ryciny) */
+    .main .block-container {
+        border: 12px solid #3D1C06;
+        border-image: linear-gradient(to bottom right, #5C2C16, #2C1203, #3D1C06) 1;
+        padding: 2.5rem 3rem;
+        background-color: rgba(249, 241, 230, 0.15);
+        box-shadow: inset 0 0 40px rgba(30, 10, 2, 0.5), 0 10px 25px rgba(0, 0, 0, 0.4);
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 2px;
     }
 
     /* Panel boczny */
@@ -50,7 +62,7 @@ st.markdown("""
         color: #2C1203 !important;
     }
 
-    /* Pudełka rozwijane (Expandery) - czysta czcionka bez nakładania ikon */
+    /* Pudełka rozwijane (Expandery) */
     .streamlit-expanderHeader p {
         font-family: 'Caveat', cursive !important;
         font-size: 1.4rem !important;
@@ -144,7 +156,6 @@ if wybor == "Przeglądaj przepisy":
             if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
                 continue
                 
-            # Usunięto emotkę ze środka, aby uniknąć błędów renderowania czcionki
             with st.expander(f"{nazwa}  [{kategoria}]"):
                 edytuj_klucz = f"edit_mode_{index}"
                 if edytuj_klucz not in st.session_state:
