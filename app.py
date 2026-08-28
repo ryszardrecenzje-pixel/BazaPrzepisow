@@ -10,16 +10,16 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA W STYLU STAREJ KSIĘGI Z ZŁOTYMI AKCENTAMI I ZNAKIEM WODNYM (CSS) ---
+# --- STYLIZACJA (NAPRAWA KONTRASTU I WIDOCZNOŚCI TEKSTU) ---
 st.markdown("""
     <style>
-    /* Tło całej aplikacji - czytelny, ciemny mahoniowy brąz + subtelny wzór retro (znak wodny) */
+    /* Tło całej aplikacji - jasny, stary brąz z czytelnym wzorem */
     .stApp {
-        background-color: #38241B;
-        background-image: radial-gradient(#5C3A29 15%, transparent 16%), radial-gradient(#2A1A12 15%, transparent 16%);
+        background-color: #4A3326;
+        background-image: radial-gradient(#6E4729 15%, transparent 16%), radial-gradient(#38241B 15%, transparent 16%);
         background-size: 30px 30px;
         background-position: 0 0, 15px 15px;
-        color: #F4E8D8;
+        color: #FFF8DC;
         font-family: 'Georgia', serif;
     }
     
@@ -28,30 +28,33 @@ st.markdown("""
         background-color: #2A1A12;
         border-right: 2px solid #D4AF37;
     }
+    [data-testid="stSidebar"] * {
+        color: #FFF8DC !important;
+    }
     
     /* Nagłówki - wyraziste antyczne złoto */
     h1, h2, h3 {
         font-family: 'Georgia', serif;
-        color: #F3C653;
+        color: #F3C653 !important;
         border-bottom: 2px solid #D4AF37;
         padding-bottom: 5px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+    
+    /* WSZYSTKIE TEKSTY, ETYKIETY I CHECKBOXY - JASNE I CZYTELNE */
+    p, span, label, div, .stMarkdown, .stCheckbox span, .stRadio label {
+        color: #FFF8DC !important;
     }
     
     /* Pola formularzy i pola tekstowe */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-        background-color: #4A3326 !important;
+        background-color: #5C3A29 !important;
         border: 1px solid #D4AF37 !important;
-        color: #F4E8D8 !important;
+        color: #FFF8DC !important;
         font-family: 'Georgia', serif;
     }
     
-    /* Etykiety tekstowe w formularzach, paragrafy i usuwanie niebieskich odcieni */
-    .stTextInput label, .stTextArea label, .stSelectbox label, .stMarkdown p, span, label {
-        color: #F4E8D8 !important;
-    }
-    
-    /* Zmiana wszystkich linków i odnośników ze standardowego niebieskiego na czytelny złoty/kremowy */
+    /* Linki */
     a, a:link, a:visited {
         color: #F3C653 !important;
         text-decoration: underline;
@@ -60,9 +63,9 @@ st.markdown("""
         color: #FFD700 !important;
     }
     
-    /* Przyciski ze złotą ramką i eleganckim tłem */
+    /* Przyciski */
     .stButton button {
-        background-color: #5C3A29 !important;
+        background-color: #6E4729 !important;
         color: #F3C653 !important;
         border: 1px solid #D4AF37 !important;
         font-family: 'Georgia', serif;
@@ -70,14 +73,14 @@ st.markdown("""
         border-radius: 3px;
     }
     .stButton button:hover {
-        background-color: #734A35 !important;
+        background-color: #8C5A38 !important;
         color: #FFFFFF !important;
         border-color: #FFD700 !important;
     }
     
-    /* Expandery (przepisy) – klimatyczne ramki ze złotym akcentem */
+    /* Expandery (przepisy) */
     .streamlit-expanderHeader {
-        background-color: #4A3326 !important;
+        background-color: #5C3A29 !important;
         border: 1px solid #D4AF37 !important;
         border-radius: 3px;
         font-family: 'Georgia', serif;
@@ -87,9 +90,12 @@ st.markdown("""
     
     /* Komunikaty systemowe (sukces, info, ostrzeżenia) */
     .stAlert {
-        background-color: #4A3326 !important;
-        color: #F4E8D8 !important;
+        background-color: #5C3A29 !important;
+        color: #FFF8DC !important;
         border: 1px solid #D4AF37 !important;
+    }
+    .stAlert * {
+        color: #FFF8DC !important;
     }
     </style>
 """, unsafe_allow_html=True)
