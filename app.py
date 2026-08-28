@@ -20,7 +20,7 @@ try:
         ws_przepisy = sheet.worksheet("Przepisy")
     except gspread.exceptions.WorksheetNotFound:
         ws_przepisy = sheet.add_worksheet(title="Przepisy", rows="100", cols="6")
-        ws_przepisy.append_row(["Nazwa", "Kategoria", "Składniki", "Instrukcja"])
+        ws_przepisy.append_row(["Nazwa", "Kategoria", "Składniki", "Przygotowanie"])
 
 except Exception as e:
     st.error(f"Błąd połączenia z Google Sheets: {e}")
@@ -34,14 +34,13 @@ df_przepisy = pd.DataFrame(data_przepisy)
 menu = ["Przeglądaj przepisy", "Dodaj przepis", "Lista zakupów", "Co mogę zrobić z..."]
 wybor = st.sidebar.selectbox("Menu", menu)
 
-# --- 1. PRZEGLĄDAJ I USUŃ PRZEPISY (Z KATEGORIAMI) ---
+# --- 1. PRZEGLĄDAJ, USUŃ I EDYTUJ PRZEPISY ---
 if wybor == "Przeglądaj przepisy":
     st.header("Twoje przepisy")
     
     if df_przepisy.empty or "Nazwa" not in df_przepisy.columns or len(df_przepisy) == 0:
         st.info("Brak zapisanych przepisów.")
     else:
-        # Opcjonalny filtr kategorii w widoku przeglądania
         dostepne_kategorie = ["Wszystkie"] + list(df_przepisy["Kategoria"].dropna().unique()) if "Kategoria" in df_przepisy.columns else ["Wszystkie"]
         wybrana_kategoria_filtr = st.selectbox("Filtruj według kategorii:", dostepne_kategorie)
         
@@ -49,33 +48,77 @@ if wybor == "Przeglądaj przepisy":
             nazwa = row.get("Nazwa", "Bez nazwy")
             kategoria = row.get("Kategoria", "Inne")
             skladniki = row.get("Składniki", "")
-            instrukcja = row.get("Instrukcja", "")
+            # Poprawione pobieranie z kolumny "Przygotowanie"
+            przygotowanie = row.get("Przygotowanie", "")
             
-            # Filtrowanie
             if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
                 continue
                 
             with st.expander(f"🍽️ {nazwa} ({kategoria})"):
-                st.markdown(f"**Kategoria:** {kategoria}")
-                st.markdown(f"**Składniki:**\n{skladniki}")
-                st.markdown(f"**Przygotowanie:**\n{instrukcja}")
+                # Sprawdzamy, czy użytkownik kliknął edycję tego konkretnego przepisu
+                edytuj_klucz = f"edit_mode_{index}"
+                if edytuj_klucz not in st.session_state:
+                    st.session_state[edytuj_klucz] = False
                 
-                if st.button(f"Usuń przepis: {nazwa}", key=f"del_{index}"):
-                    ws_przepisy.delete_rows(index + 2)
-                    st.success(f"Usunięto przepis: {nazwa}")
-                    st.rerun()
+                if not st.session_state[edytuj_klucz]:
+                    # Widok normalny
+                    st.markdown(f"**Kategoria:** {kategoria}")
+                    st.markdown(f"**Składniki:**\n{skladniki}")
+                    st.markdown(f"**Przygotowanie:**\n{przygotowanie}")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button(f"✏️ Edytuj", key=f"btn_edit_{index}"):
+                            st.session_state[edytuj_klucz] = True
+                            st.rerun()
+                    with col2:
+                        if st.button(f"🗑️ Usuń", key=f"del_{index}"):
+                            ws_przepisy.delete_rows(index + 2)
+                            st.success(f"Usunięto przepis: {nazwa}")
+                            st.rerun()
+                else:
+                    # Widok edycji
+                    st.subheader("Edycja przepisu")
+                    with st.form(key=f"form_edit_{index}"):
+                        nowa_nazwa = st.text_input("Nazwa przepisu", value=nazwa)
+                        
+                        kategorie_opcje = ["Śniadanie", "Obiad", "Kolacja", "Deser", "Przekąska", "Inne"]
+                        kat_index = kategorie_opcje.index(kategoria) if kategoria in kategorie_opcje else 0
+                        nowa_kategoria = st.selectbox("Kategoria posiłku", kategorie_opcje, index=kat_index)
+                        
+                        nowe_przygotowanie = st.text_area("Przygotowanie", value=przygotowanie)
+                        nowe_skladniki = st.text_area("Składniki", value=skladniki)
+                        
+                        col_zapisz, col_anuluj = st.columns(2)
+                        zapisz_zmiany = col_zapisz.form_submit_button("Zapisz zmiany")
+                        anuluj = col_anuluj.form_submit_button("Anuluj")
+                        
+                        if zapisz_zmiany:
+                            # Aktualizacja wiersza w arkuszu (index + 2 bo gspread jest od 1 i mamy nagłówek)
+                            row_num = index + 2
+                            ws_przepisy.update_cell(row_num, 1, nowa_nazwa)
+                            ws_przepisy.update_cell(row_num, 2, nowa_kategoria)
+                            ws_przepisy.update_cell(row_num, 3, nowe_skladniki)
+                            ws_przepisy.update_cell(row_num, 4, nowe_przygotowanie)
+                            
+                            st.session_state[edytuj_klucz] = False
+                            st.success("Zaktualizowano przepis!")
+                            st.rerun()
+                            
+                        if anuluj:
+                            st.session_state[edytuj_klucz] = False
+                            st.rerun()
 
-# --- 2. DODAJ PRZEPIS (Z KATEGORIĄ) ---
+# --- 2. DODAJ PRZEPIS ---
 elif wybor == "Dodaj przepis":
     st.header("Dodaj nowy przepis")
     
     with st.form("form_dodania"):
         nowa_nazwa = st.text_input("Nazwa przepisu")
-        
         kategorie_opcje = ["Śniadanie", "Obiad", "Kolacja", "Deser", "Przekąska", "Inne"]
         kategoria_input = st.selectbox("Kategoria posiłku", kategorie_opcje)
         
-        instrukcja_input = st.text_area("Sposób przygotowania", help="Opisz krok po kroku jak wykonać przepis.")
+        przygotowanie_input = st.text_area("Przygotowanie", help="Opisz krok po kroku jak wykonać przepis.")
         
         st.markdown("### Składniki")
         st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `3 | plastry | boczek`)")
@@ -92,8 +135,8 @@ elif wybor == "Dodaj przepis":
                 if nowa_nazwa.strip() in istniejace_nazwy:
                     st.error(f"Przepis o nazwie '{nowa_nazwa}' już istnieje w bazie!")
                 else:
-                    # Kolejność zapisu: Nazwa, Kategoria, Składniki, Instrukcja
-                    ws_przepisy.append_row([nowa_nazwa, kategoria_input, skladniki_input, instrukcja_input])
+                    # Kolejność zapisu zgodna z kolumnami: Nazwa, Kategoria, Składniki, Przygotowanie
+                    ws_przepisy.append_row([nowa_nazwa, kategoria_input, skladniki_input, przygotowanie_input])
                     st.success(f"Dodano przepis: {nowa_nazwa}!")
                     st.rerun()
 
