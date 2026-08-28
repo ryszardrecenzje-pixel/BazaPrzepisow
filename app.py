@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA (IDEALNY KONTRAST: JASNE TŁO + CIEMNY TEKST W SIDEBARZE) ---
+# --- STYLIZACJA (POPRAWKA KONTRASTU W ROZWIJANYM MENU SIDEBARA) ---
 st.markdown("""
     <style>
     /* Tło całej aplikacji - jasny, stary brąz z czytelnym wzorem */
@@ -23,19 +23,34 @@ st.markdown("""
         font-family: 'Georgia', serif;
     }
     
-    /* Panel boczny (Sidebar) – jaśniejsze tło i CIEMNY tekst (żeby lista rozwijana była czytelna) */
+    /* Panel boczny (Sidebar) – jasny pergamin i ciemny tekst */
     [data-testid="stSidebar"] {
         background-color: #D2B48C;
         border-right: 2px solid #5C3A29;
     }
     [data-testid="stSidebar"] * {
-        color: #2A1A12 !important;
+        color: #1A0F08 !important;
     }
-    /* Wyjątek dla pola selectbox w sidebarze, żeby miało ciemny tekst */
-    [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] {
+    
+    /* Pudełko selectboksa w sidebarze */
+    [data-testid="stSidebar"] div[data-baseweb="select"] > div {
         background-color: #F4E8D8 !important;
-        color: #2A1A12 !important;
+        color: #1A0F08 !important;
         border: 1px solid #5C3A29 !important;
+    }
+    
+    /* Wymuszenie ciemnego tekstu dla opcji rozwijanych w menu bocznym */
+    div[data-baseweb="popover"] * {
+        color: #1A0F08 !important;
+        background-color: #F4E8D8 !important;
+    }
+    div[data-baseweb="menu"] div {
+        color: #1A0F08 !important;
+        background-color: #F4E8D8 !important;
+    }
+    div[data-baseweb="menu"] div:hover {
+        background-color: #D2B48C !important;
+        color: #000000 !important;
     }
     
     /* Nagłówki - wyraziste antyczne złoto */
