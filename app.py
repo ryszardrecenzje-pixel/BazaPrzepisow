@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA: PERGAMIN Z CIENIOWANYMI BRZEGAMI I PISMO ODREGZNE PIÓREM ---
+# --- STYLIZACJA: PERGAMIN Z CIENIOWANYMI BRZEGAMI I PISMO ODRĘCZNE PIÓREM ---
 st.markdown("""
     <style>
     /* Import czcionek imitujących pismo odręczne i starodruk */
@@ -44,14 +44,14 @@ st.markdown("""
         font-size: 3.5rem !important;
     }
 
-    /* Teksty, etykiety i składniki - czcionka imitująca pismo odręczne piórem */
-    p, span, label, div, .stMarkdown, .stMarkdown p, li {
+    /* Zwykłe teksty, etykiety i zawartość - czcionka imitująca pismo odręczne piórem */
+    p, span, label, .stMarkdown, .stMarkdown p, li {
         font-family: 'Caveat', cursive !important;
         font-size: 1.35rem !important;
         color: #2C1203 !important;
     }
 
-    /* Expandery jako karty przepisów */
+    /* Expandery jako karty przepisów (bez psucia ikon Streamlita) */
     .streamlit-expanderHeader {
         background-color: #EFE0C4 !important;
         border: 1px solid #704214 !important;
