@@ -10,71 +10,74 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA W STYLU CIEMNEJ, SUROWEJ STAREJ KSIĘGI (CSS) ---
+# --- STYLIZACJA W STYLU STAREJ KSIĘGI Z ZŁOTYMI AKCENTAMI (CSS) ---
 st.markdown("""
     <style>
-    /* Tło całej aplikacji - ciemny, surowy brąz i stary pergamin */
+    /* Tło całej aplikacji - czytelny, ciemny mahoniowy brąz */
     .stApp {
-        background-color: #261A12;
-        color: #E6D5C3;
+        background-color: #38241B;
+        color: #F4E8D8;
         font-family: 'Georgia', serif;
     }
     
-    /* Panel boczny (Sidebar) - ciemniejsze drewno */
+    /* Panel boczny (Sidebar) */
     [data-testid="stSidebar"] {
-        background-color: #1C120D;
-        border-right: 2px solid #5C3A21;
+        background-color: #2A1A12;
+        border-right: 2px solid #D4AF37;
     }
     
-    /* Nagłówki - wyblakłe złoto i surowy brąz */
+    /* Nagłówki - wyraziste antyczne złoto */
     h1, h2, h3 {
         font-family: 'Georgia', serif;
-        color: #D4B28C;
-        border-bottom: 2px solid #5C3A21;
+        color: #F3C653;
+        border-bottom: 2px solid #D4AF37;
         padding-bottom: 5px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
     
-    /* Pola formularzy i przyciski - ciemny styl */
+    /* Pola formularzy i pola tekstowe */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-        background-color: #1F150F !important;
-        border: 1px solid #5C3A21 !important;
-        color: #E6D5C3 !important;
+        background-color: #4A3326 !important;
+        border: 1px solid #D4AF37 !important;
+        color: #F4E8D8 !important;
         font-family: 'Georgia', serif;
     }
     
-    /* Etykiety i tekst pomocy w polach */
+    /* Etykiety tekstowe w formularzach */
     .stTextInput label, .stTextArea label, .stSelectbox label, .stMarkdown p, span {
-        color: #D2B48C !important;
+        color: #EED9C4 !important;
     }
     
-    /* Przyciski w stylu starego żelaza / ciemnego drewna */
+    /* Przyciski ze złotą ramką i eleganckim tłem */
     .stButton button {
-        background-color: #4A2E18 !important;
-        color: #E6D5C3 !important;
-        border: 1px solid #6E4729 !important;
+        background-color: #5C3A29 !important;
+        color: #F3C653 !important;
+        border: 1px solid #D4AF37 !important;
         font-family: 'Georgia', serif;
-        border-radius: 2px;
+        font-weight: bold;
+        border-radius: 3px;
     }
     .stButton button:hover {
-        background-color: #5C3A21 !important;
-        border-color: #D4B28C !important;
+        background-color: #734A35 !important;
+        color: #FFFFFF !important;
+        border-color: #FFD700 !important;
     }
     
-    /* Expandery (przepisy) - surowe, ciemne ramki */
+    /* Expandery (przepisy) – klimatyczne ramki ze złotym akcentem */
     .streamlit-expanderHeader {
-        background-color: #1F150F !important;
-        border: 1px solid #5C3A21 !important;
-        border-radius: 2px;
+        background-color: #4A3326 !important;
+        border: 1px solid #D4AF37 !important;
+        border-radius: 3px;
         font-family: 'Georgia', serif;
-        color: #D4B28C !important;
+        color: #F3C653 !important;
         font-weight: bold;
     }
     
-    /* Komunikaty ostrzegawcze/sukcesu */
+    /* Komunikaty systemowe (sukces, info, ostrzeżenia) */
     .stAlert {
-        background-color: #1F150F !important;
-        color: #E6D5C3 !important;
-        border: 1px solid #5C3A21 !important;
+        background-color: #4A3326 !important;
+        color: #F4E8D8 !important;
+        border: 1px solid #D4AF37 !important;
     }
     </style>
 """, unsafe_allow_html=True)
