@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA (POPRAWKA KONTRASTU W ROZWIJANYM MENU SIDEBARA) ---
+# --- STYLIZACJA (WYMUSZENIE CZARNEGO TEKSTU W MENU ROZWIJANYM) ---
 st.markdown("""
     <style>
     /* Tło całej aplikacji - jasny, stary brąz z czytelnym wzorem */
@@ -35,20 +35,21 @@ st.markdown("""
     /* Pudełko selectboksa w sidebarze */
     [data-testid="stSidebar"] div[data-baseweb="select"] > div {
         background-color: #F4E8D8 !important;
-        color: #1A0F08 !important;
+        color: #000000 !important;
         border: 1px solid #5C3A29 !important;
     }
     
-    /* Wymuszenie ciemnego tekstu dla opcji rozwijanych w menu bocznym */
-    div[data-baseweb="popover"] * {
-        color: #1A0F08 !important;
+    /* BEZPOŚREDNIE WYMUSZENIE CZARNEGO TEKSTU W ROZWIJANYM MENU SELECTBOXA */
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"], li[role="option"] {
         background-color: #F4E8D8 !important;
     }
-    div[data-baseweb="menu"] div {
-        color: #1A0F08 !important;
-        background-color: #F4E8D8 !important;
+    
+    div[data-baseweb="popover"] *, div[data-baseweb="menu"] *, ul[role="listbox"] *, li[role="option"] * {
+        color: #000000 !important;
+        background-color: transparent !important;
     }
-    div[data-baseweb="menu"] div:hover {
+    
+    li[role="option"]:hover {
         background-color: #D2B48C !important;
         color: #000000 !important;
     }
