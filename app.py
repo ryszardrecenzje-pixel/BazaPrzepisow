@@ -10,12 +10,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA W STYLU STAREJ KSIĘGI Z ZŁOTYMI AKCENTAMI (CSS) ---
+# --- STYLIZACJA W STYLU STAREJ KSIĘGI Z ZŁOTYMI AKCENTAMI I ZNAKIEM WODNYM (CSS) ---
 st.markdown("""
     <style>
-    /* Tło całej aplikacji - czytelny, ciemny mahoniowy brąz */
+    /* Tło całej aplikacji - czytelny, ciemny mahoniowy brąz + subtelny wzór retro (znak wodny) */
     .stApp {
         background-color: #38241B;
+        background-image: radial-gradient(#5C3A29 15%, transparent 16%), radial-gradient(#2A1A12 15%, transparent 16%);
+        background-size: 30px 30px;
+        background-position: 0 0, 15px 15px;
         color: #F4E8D8;
         font-family: 'Georgia', serif;
     }
@@ -32,7 +35,7 @@ st.markdown("""
         color: #F3C653;
         border-bottom: 2px solid #D4AF37;
         padding-bottom: 5px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
     }
     
     /* Pola formularzy i pola tekstowe */
@@ -43,9 +46,18 @@ st.markdown("""
         font-family: 'Georgia', serif;
     }
     
-    /* Etykiety tekstowe w formularzach */
-    .stTextInput label, .stTextArea label, .stSelectbox label, .stMarkdown p, span {
-        color: #EED9C4 !important;
+    /* Etykiety tekstowe w formularzach, paragrafy i usuwanie niebieskich odcieni */
+    .stTextInput label, .stTextArea label, .stSelectbox label, .stMarkdown p, span, label {
+        color: #F4E8D8 !important;
+    }
+    
+    /* Zmiana wszystkich linków i odnośników ze standardowego niebieskiego na czytelny złoty/kremowy */
+    a, a:link, a:visited {
+        color: #F3C653 !important;
+        text-decoration: underline;
+    }
+    a:hover {
+        color: #FFD700 !important;
     }
     
     /* Przyciski ze złotą ramką i eleganckim tłem */
