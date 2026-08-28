@@ -19,8 +19,8 @@ try:
     try:
         ws_przepisy = sheet.worksheet("Przepisy")
     except gspread.exceptions.WorksheetNotFound:
-        ws_przepisy = sheet.add_worksheet(title="Przepisy", rows="100", cols="5")
-        ws_przepisy.append_row(["Nazwa", "Składniki", "Instrukcja"])
+        ws_przepisy = sheet.add_worksheet(title="Przepisy", rows="100", cols="6")
+        ws_przepisy.append_row(["Nazwa", "Kategoria", "Składniki", "Instrukcja"])
 
 except Exception as e:
     st.error(f"Błąd połączenia z Google Sheets: {e}")
@@ -34,19 +34,29 @@ df_przepisy = pd.DataFrame(data_przepisy)
 menu = ["Przeglądaj przepisy", "Dodaj przepis", "Lista zakupów", "Co mogę zrobić z..."]
 wybor = st.sidebar.selectbox("Menu", menu)
 
-# --- 1. PRZEGLĄDAJ I USUŃ PRZEPISY ---
+# --- 1. PRZEGLĄDAJ I USUŃ PRZEPISY (Z KATEGORIAMI) ---
 if wybor == "Przeglądaj przepisy":
     st.header("Twoje przepisy")
     
     if df_przepisy.empty or "Nazwa" not in df_przepisy.columns or len(df_przepisy) == 0:
         st.info("Brak zapisanych przepisów.")
     else:
+        # Opcjonalny filtr kategorii w widoku przeglądania
+        dostepne_kategorie = ["Wszystkie"] + list(df_przepisy["Kategoria"].dropna().unique()) if "Kategoria" in df_przepisy.columns else ["Wszystkie"]
+        wybrana_kategoria_filtr = st.selectbox("Filtruj według kategorii:", dostepne_kategorie)
+        
         for index, row in df_przepisy.iterrows():
             nazwa = row.get("Nazwa", "Bez nazwy")
+            kategoria = row.get("Kategoria", "Inne")
             skladniki = row.get("Składniki", "")
             instrukcja = row.get("Instrukcja", "")
             
-            with st.expander(f"🍽️ {nazwa}"):
+            # Filtrowanie
+            if wybrana_kategoria_filtr != "Wszystkie" and kategoria != wybrana_kategoria_filtr:
+                continue
+                
+            with st.expander(f"🍽️ {nazwa} ({kategoria})"):
+                st.markdown(f"**Kategoria:** {kategoria}")
                 st.markdown(f"**Składniki:**\n{skladniki}")
                 st.markdown(f"**Przygotowanie:**\n{instrukcja}")
                 
@@ -55,19 +65,20 @@ if wybor == "Przeglądaj przepisy":
                     st.success(f"Usunięto przepis: {nazwa}")
                     st.rerun()
 
-# --- 2. DODAJ PRZEPIS (POPRAWIONA KOLEJNOŚĆ PÓL) ---
+# --- 2. DODAJ PRZEPIS (Z KATEGORIĄ) ---
 elif wybor == "Dodaj przepis":
     st.header("Dodaj nowy przepis")
     
     with st.form("form_dodania"):
         nowa_nazwa = st.text_input("Nazwa przepisu")
         
-        # NAJPIERW SPOSÓB PRZYGOTOWANIA (górne pole tekstowe)
+        kategorie_opcje = ["Śniadanie", "Obiad", "Kolacja", "Deser", "Przekąska", "Inne"]
+        kategoria_input = st.selectbox("Kategoria posiłku", kategorie_opcje)
+        
         instrukcja_input = st.text_area("Sposób przygotowania", help="Opisz krok po kroku jak wykonać przepis.")
         
-        # POTEM SKŁADNIKI (dolne pole tekstowe)
         st.markdown("### Składniki")
-        st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `3 | plastry | boczek` lub `200 | g | ser mozzarella`)")
+        st.info("Wpisz składniki w formacie: **Ilość | Jednostka | Nazwa produktu** (np. `3 | plastry | boczek`)")
         skladniki_input = st.text_area("Lista składników (każdy w nowej linii)")
         
         submit = st.form_submit_button("Zapisz przepis")
@@ -81,8 +92,8 @@ elif wybor == "Dodaj przepis":
                 if nowa_nazwa.strip() in istniejace_nazwy:
                     st.error(f"Przepis o nazwie '{nowa_nazwa}' już istnieje w bazie!")
                 else:
-                    # Zapis w odpowiedniej kolejności kolumn: Nazwa, Składniki, Instrukcja
-                    ws_przepisy.append_row([nowa_nazwa, skladniki_input, instrukcja_input])
+                    # Kolejność zapisu: Nazwa, Kategoria, Składniki, Instrukcja
+                    ws_przepisy.append_row([nowa_nazwa, kategoria_input, skladniki_input, instrukcja_input])
                     st.success(f"Dodano przepis: {nowa_nazwa}!")
                     st.rerun()
 
@@ -149,7 +160,7 @@ elif wybor == "Co mogę zrobić z...":
         posiadane_produkty = []
         for skladnik in sorted(wszystkie_skladniki):
             if st.checkbox(f"{skladnik}", key=f"have_{skladnik}"):
-                posiadane_produkty.append(skkladnik if 'skkladnik' in locals() else skladnik)
+                posiadane_produkty.append(skladnik)
                 
         st.markdown("---")
         st.subheader("Wyniki - co możesz zrobić:")
@@ -160,6 +171,7 @@ elif wybor == "Co mogę zrobić z...":
             mozliwe_przepisy = 0
             for _, row in df_przepisy.iterrows():
                 nazwa = row.get("Nazwa", "")
+                kategoria = row.get("Kategoria", "Inne")
                 skladniki_tekst = row.get("Składniki", "")
                 
                 skladniki_przepisu = []
@@ -176,10 +188,10 @@ elif wybor == "Co mogę zrobić z...":
                     procent_posiadanych = len(posiadane_w_przepisie) / len(skladniki_przepisu) * 100
                     
                     if len(brakujące_w_przepisie) == 0:
-                        st.success(f"🎉 **{nazwa}** (Masz 100% składników!)")
+                        st.success(f"🎉 **{nazwa}** [{kategoria}] (Masz 100% składników!)")
                         mozliwe_przepisy += 1
                     elif procent_posiadanych >= 50:
-                        st.info(f"💡 **{nazwa}** (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})")
+                        st.info(f"💡 **{nazwa}** [{kategoria}] (Masz {int(procent_posiadanych)}% składników. Brakuje: {', '.join(brakujące_w_przepisie)})")
                         mozliwe_przepisy += 1
                         
             if mozliwe_przepisy == 0:
