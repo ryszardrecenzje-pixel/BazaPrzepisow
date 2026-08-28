@@ -10,58 +10,71 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA W STYLU STAREJ KSIĄŻKI KUCHARSKIEJ (CSS) ---
+# --- STYLIZACJA W STYLU CIEMNEJ, SUROWEJ STAREJ KSIĘGI (CSS) ---
 st.markdown("""
     <style>
-    /* Tło całej aplikacji - ciepły, pergaminowy odcień */
+    /* Tło całej aplikacji - ciemny, surowy brąz i stary pergamin */
     .stApp {
-        background-color: #FDFBF7;
-        color: #2C221E;
+        background-color: #261A12;
+        color: #E6D5C3;
         font-family: 'Georgia', serif;
     }
     
-    /* Panel boczny (Sidebar) */
+    /* Panel boczny (Sidebar) - ciemniejsze drewno */
     [data-testid="stSidebar"] {
-        background-color: #F4EBE1;
-        border-right: 2px solid #D2B48C;
+        background-color: #1C120D;
+        border-right: 2px solid #5C3A21;
     }
     
-    /* Nagłówki */
+    /* Nagłówki - wyblakłe złoto i surowy brąz */
     h1, h2, h3 {
         font-family: 'Georgia', serif;
-        color: #4A2E18;
-        border-bottom: 2px solid #D2B48C;
+        color: #D4B28C;
+        border-bottom: 2px solid #5C3A21;
         padding-bottom: 5px;
     }
     
-    /* Pola formularzy i przyciski */
+    /* Pola formularzy i przyciski - ciemny styl */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-        background-color: #FFFFFF !important;
-        border: 1px solid #C7A17A !important;
-        color: #2C221E !important;
+        background-color: #1F150F !important;
+        border: 1px solid #5C3A21 !important;
+        color: #E6D5C3 !important;
         font-family: 'Georgia', serif;
     }
     
-    /* Przyciski */
+    /* Etykiety i tekst pomocy w polach */
+    .stTextInput label, .stTextArea label, .stSelectbox label, .stMarkdown p, span {
+        color: #D2B48C !important;
+    }
+    
+    /* Przyciski w stylu starego żelaza / ciemnego drewna */
     .stButton button {
-        background-color: #8B4513 !important;
-        color: #FFFFFF !important;
-        border: none !important;
+        background-color: #4A2E18 !important;
+        color: #E6D5C3 !important;
+        border: 1px solid #6E4729 !important;
         font-family: 'Georgia', serif;
-        border-radius: 4px;
+        border-radius: 2px;
     }
     .stButton button:hover {
-        background-color: #A0522D !important;
+        background-color: #5C3A21 !important;
+        border-color: #D4B28C !important;
     }
     
-    /* Expandery (przepisy) */
+    /* Expandery (przepisy) - surowe, ciemne ramki */
     .streamlit-expanderHeader {
-        background-color: #F4EBE1 !important;
-        border: 1px solid #D2B48C !important;
-        border-radius: 4px;
+        background-color: #1F150F !important;
+        border: 1px solid #5C3A21 !important;
+        border-radius: 2px;
         font-family: 'Georgia', serif;
-        color: #4A2E18 !important;
+        color: #D4B28C !important;
         font-weight: bold;
+    }
+    
+    /* Komunikaty ostrzegawcze/sukcesu */
+    .stAlert {
+        background-color: #1F150F !important;
+        color: #E6D5C3 !important;
+        border: 1px solid #5C3A21 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -100,7 +113,6 @@ wybor = st.sidebar.selectbox("Spis treści", menu)
 # --- FUNKCJA POMOCNICZA DO PARSOWANIA SKŁADNIKÓW ---
 def parse_skladnik(linijka):
     """Rozbija linijkę składnika używając ukośnika / lub \ """
-    # Zamieniamy \ na / dla jednolitego parsowania
     normalizowana = linijka.replace("\\", "/")
     parts = [p.strip() for p in normalizowana.split("/")]
     return parts
