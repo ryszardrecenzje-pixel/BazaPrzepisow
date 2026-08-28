@@ -10,114 +10,21 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- STYLIZACJA (WYMUSZENIE CZARNEGO TEKSTU W MENU ROZWIJANYM) ---
+# --- LEKKI STYL (BAZUJĄCY NA MOTYWIE CONFIG.TOML) ---
 st.markdown("""
     <style>
-    /* Tło całej aplikacji - jasny, stary brąz z czytelnym wzorem */
-    .stApp {
-        background-color: #4A3326;
-        background-image: radial-gradient(#6E4729 15%, transparent 16%), radial-gradient(#38241B 15%, transparent 16%);
-        background-size: 30px 30px;
-        background-position: 0 0, 15px 15px;
-        color: #FFF8DC;
-        font-family: 'Georgia', serif;
-    }
-    
-    /* Panel boczny (Sidebar) – jasny pergamin i ciemny tekst */
-    [data-testid="stSidebar"] {
-        background-color: #D2B48C;
-        border-right: 2px solid #5C3A29;
-    }
-    [data-testid="stSidebar"] * {
-        color: #1A0F08 !important;
-    }
-    
-    /* Pudełko selectboksa w sidebarze */
-    [data-testid="stSidebar"] div[data-baseweb="select"] > div {
-        background-color: #F4E8D8 !important;
-        color: #000000 !important;
-        border: 1px solid #5C3A29 !important;
-    }
-    
-    /* BEZPOŚREDNIE WYMUSZENIE CZARNEGO TEKSTU W ROZWIJANYM MENU SELECTBOXA */
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"], li[role="option"] {
-        background-color: #F4E8D8 !important;
-    }
-    
-    div[data-baseweb="popover"] *, div[data-baseweb="menu"] *, ul[role="listbox"] *, li[role="option"] * {
-        color: #000000 !important;
-        background-color: transparent !important;
-    }
-    
-    li[role="option"]:hover {
-        background-color: #D2B48C !important;
-        color: #000000 !important;
-    }
-    
     /* Nagłówki - wyraziste antyczne złoto */
     h1, h2, h3 {
         font-family: 'Georgia', serif;
-        color: #F3C653 !important;
+        color: #8B4513 !important;
         border-bottom: 2px solid #D4AF37;
         padding-bottom: 5px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    }
-    
-    /* Teksty w głównej części aplikacji */
-    p, span, label, div, .stMarkdown, .stCheckbox span, .stRadio label {
-        color: #FFF8DC !important;
-    }
-    
-    /* Pola formularzy i pola tekstowe w głównej części */
-    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-        background-color: #5C3A29 !important;
-        border: 1px solid #D4AF37 !important;
-        color: #FFF8DC !important;
-        font-family: 'Georgia', serif;
-    }
-    
-    /* Linki */
-    a, a:link, a:visited {
-        color: #F3C653 !important;
-        text-decoration: underline;
-    }
-    a:hover {
-        color: #FFD700 !important;
-    }
-    
-    /* Przyciski */
-    .stButton button {
-        background-color: #6E4729 !important;
-        color: #F3C653 !important;
-        border: 1px solid #D4AF37 !important;
-        font-family: 'Georgia', serif;
-        font-weight: bold;
-        border-radius: 3px;
-    }
-    .stButton button:hover {
-        background-color: #8C5A38 !important;
-        color: #FFFFFF !important;
-        border-color: #FFD700 !important;
     }
     
     /* Expandery (przepisy) */
     .streamlit-expanderHeader {
-        background-color: #5C3A29 !important;
-        border: 1px solid #D4AF37 !important;
-        border-radius: 3px;
         font-family: 'Georgia', serif;
-        color: #F3C653 !important;
         font-weight: bold;
-    }
-    
-    /* Komunikaty systemowe */
-    .stAlert {
-        background-color: #5C3A29 !important;
-        color: #FFF8DC !important;
-        border: 1px solid #D4AF37 !important;
-    }
-    .stAlert * {
-        color: #FFF8DC !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -394,7 +301,7 @@ elif wybor == "Co mogę zrobić z...":
                     posiadane_w_przepisie = [s for s in skladniki_przepisu if s in posiadane_produkty]
                     brakujące_w_przepisie = [s for s in skladniki_przepisu if s not in posiadane_produkty]
                     
-                    procent_posiadanych = len(posiadane_w_przepisie) / len(skladniki_przepisu) * 100
+                    procent_posiadanych = len(posiadane_w_persipie) / len(skladniki_przepisu) * 100 if 'posiadane_w_persipie' else len(posiadane_w_przepisie) / len(skladniki_przepisu) * 100
                     
                     if len(brakujące_w_przepisie) == 0:
                         st.success(f"🎉 **{nazwa}** [{kategoria}] (Masz 100% składników!)")
