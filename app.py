@@ -5,7 +5,7 @@ from google.oauth2.service_account import Credentials
 
 # --- KONFIGURACJA STRONY ---
 st.set_page_config(
-    page_title="Stara Księga Kucharska",
+    page_title="Księga Kucharska",
     page_icon="📜",
     layout="wide"
 )
@@ -123,7 +123,7 @@ except Exception as e:
     st.error(f"Błąd połączenia z Google Sheets: {e}")
     st.stop()
 
-st.title("📜 Staropolska Księga Kucharska")
+st.title("📜Księga Kucharska")
 
 data_przepisy = ws_przepisy.get_all_records()
 df_przepisy = pd.DataFrame(data_przepisy)
